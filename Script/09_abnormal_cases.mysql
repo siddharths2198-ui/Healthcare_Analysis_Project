@@ -1,0 +1,28 @@
+ /*
+===============================================================================
+Abnormal Cases
+===============================================================================
+Purpose:
+    - To calculate total number of abnormal cases
+    - To calculate abnormal case percentages.
+
+MYSQL Functions Used:
+    - Count
+    - Case
+    - Sub query
+    -Group By
+===============================================================================
+*/
+
+SELECT 
+	Hospital,
+	Total_Cases,
+	Abnormal_Cases,
+	CONCAT(ROUND(Abnormal_Cases * 100 / Total_Cases,0),'%') AS Abnormal_Case_Percentage
+FROM (
+	SELECT 
+		Hospital,
+		COUNT(*) AS Total_Cases,
+		SUM(CASE WHEN Test_Results = 'Abnormal' THEN  1 ELSE 0 END) AS Abnormal_Cases
+	FROM raw_healthcare_cleaned
+	GROUP BY Hospital)t;
