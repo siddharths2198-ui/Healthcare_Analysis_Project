@@ -1,0 +1,37 @@
+/*
+===============================================================================
+Length of Stay(Los) Analysis
+===============================================================================
+Purpose:
+    - To explore the Average length of stay of patients.
+    - To explore the length of stay by medical condition.
+    - To explore the length of stay by admission type
+	
+MYSQL Functions Used:
+    - Average
+    - Count
+    - Group By
+    - Order By
+===============================================================================
+*/
+
+-- Average LOS
+SELECT 
+	ROUND(AVG(Length_of_Stay),2) AS Avg_Length_of_Stay
+FROM raw_healthcare_cleaned;
+
+-- LOS By Medical Condition
+SELECT
+	Medical_Condition,
+	COUNT(*) AS Patient,
+	ROUND(AVG(Length_of_Stay),2) AS Avg_LoS
+FROM raw_healthcare_cleaned
+GROUP BY Medical_Condition
+ORDER BY Avg_LoS DESC;
+
+-- LOS By Admission Type
+SELECT 
+    Admission_Type,
+    ROUND(AVG(length_of_stay),2) AS avg_los
+FROM raw_healthcare_cleaned
+GROUP BY Admission_Type;	
