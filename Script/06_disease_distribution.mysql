@@ -1,0 +1,35 @@
+/*
+===============================================================================
+Disease Distribution Analysis
+===============================================================================
+Purpose:
+    - To Analyze the disease distribution by medical condition.
+    - To Analyze the disease distribution by gender.
+	
+MYSQL Functions Used:
+    - Count
+    - Group By
+    - Order By
+===============================================================================
+*/
+
+-- Disease Distribution Analysis
+SELECT 
+    Medical_Condition,
+    COUNT(*) AS Total_cases,
+    ROUND(
+        COUNT(*) * 100.0 /
+        (SELECT COUNT(*) FROM raw_healthcare_cleaned),
+    2) AS Case_Percentage
+FROM raw_healthcare_cleaned
+GROUP BY Medical_Condition
+ORDER BY total_cases DESC;
+
+-- Disease by Gender
+SELECT 
+	Medical_Condition,
+	Gender,
+	COUNT(*) AS Cases
+FROM raw_healthcare_cleaned
+GROUP BY Medical_Condition, Gender
+ORDER BY Medical_Condition;
