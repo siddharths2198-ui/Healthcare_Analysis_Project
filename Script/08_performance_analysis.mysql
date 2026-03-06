@@ -1,0 +1,38 @@
+/*
+===============================================================================
+Performance Analysis (Month-over-Month)
+===============================================================================
+Purpose:
+    - To measure the revenue month over month.
+    - To know if revenue is increasing month over month or not .
+    - To track monthly growth.
+
+MYSQL Functions Used:
+    - LAG(): Accesses data from previous rows.
+    - Sum
+    - Group By
+===============================================================================
+*/
+-- Revenue Growth (Month-over-Month)
+WITH monthly_revenue AS (
+SELECT 
+	DATE_FORMAT(Date_of_Admission,'%Y-%m') AS Months,
+	ROUND(SUM(Billing_Amount),2) AS Revenue
+FROM raw_healthcare_cleaned
+GROUP BY Months
+)
+SELECT
+ Months,
+ Revenue,
+ LAG(Revenue) OVER(ORDER BY Months) AS Prev_Month_Revenue,
+ CONCAT(ROUND((Revenue - LAG(Revenue) OVER(ORDER BY Months))
+	 / LAG(Revenue) OVER(ORDER BY Months) * 100,2),'%') AS Mom_Growth_Percentage
+FROM monthly_revenue; 
+
+
+-- Revenue Per Day (Operational Efficiency)
+SELECT 
+ Hospital,
+ ROUND(SUM(Billing_Amount)/SUM(Length_of_Stay),2) AS Revenue_Per_Day
+FROM raw_healthcare_cleaned 
+GROUP BY Hospital; 
