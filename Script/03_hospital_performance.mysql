@@ -1,0 +1,27 @@
+/*
+===============================================================================
+Hospital Performance dashboard
+===============================================================================
+Purpose:
+    - To explore the Performance of hospitals.
+	
+MYSQL Functions Used:
+    - Sum
+    - Average
+    - Case when
+    - Group By
+    - Order By
+===============================================================================
+*/
+
+-- Hospital Performance Dashboard
+SELECT 
+	Hospital,
+	COUNT(*) AS Total_Patient,
+	ROUND(SUM(Billing_Amount),2) AS Total_revenue,
+	ROUND(AVG(Billing_Amount),2) AS Average_Billing,
+	ROUND(AVG(Length_of_Stay),0) AS Avg_LoS,
+	SUM(CASE WHEN Test_Results = 'Abnormal' THEN 1 ELSE 0 END) AS Abnormal_Cases
+FROM raw_healthcare_cleaned
+GROUP BY Hospital
+ORDER BY Total_revenue DESC; 
