@@ -1,0 +1,37 @@
+/*
+===============================================================================
+Insurance Provider
+===============================================================================
+Purpose:
+    - To explore the insurance provider revenue break down.
+    - To explore the insurance revenue percentage (part to whole)
+	
+MYSQL Functions Used:
+    - Sum
+    - Average
+    - Group by
+    - Order by
+===============================================================================
+*/
+
+-- Insurance Provider Revenue Breakdown
+SELECT 
+    Insurance_Provider,
+    COUNT(*) AS total_claims,
+    ROUND(SUM(Billing_Amount),2) AS total_revenue,
+    ROUND(AVG(Billing_Amount),2) AS avg_claim_value
+FROM raw_healthcare_cleaned
+GROUP BY Insurance_Provider
+ORDER BY total_revenue DESC;
+
+-- Revenue Percentage
+SELECT 
+    Insurance_Provider,
+    ROUND(SUM(Billing_Amount),2) AS Revenue,
+    ROUND(
+        SUM(Billing_Amount) * 100 /
+        (SELECT SUM(Billing_Amount) FROM raw_healthcare_cleaned),
+    2) AS Revenue_Percentage
+FROM raw_healthcare_cleaned
+GROUP BY Insurance_Provider
+ORDER BY revenue DESC;
