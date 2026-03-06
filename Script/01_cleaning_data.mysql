@@ -1,0 +1,125 @@
+/*
+===============================================================================
+Data Cleaning
+===============================================================================
+Purpose:
+    - To Clean the data by preparing a staging table without touching the actual data.
+    - To Add a Primary Key as main table did not contain one.
+    - To check for duplicates and removing them.
+    - To create Index for better performance.
+    - To Check For Negative or Invalid Value and Correcting them
+
+Methods Used:
+    - Update, Trim, Alter, Self-join,etc.
+===============================================================================
+*/
+
+-- 1. Create the Staging Table
+
+CREATE TABLE raw_healthcare (
+    Name VARCHAR(255),
+    Age INT,
+    Gender VARCHAR(50),
+    Blood_Type VARCHAR(10),
+    Medical_Condition VARCHAR(255),
+    Date_of_Admission DATE,
+    Doctor VARCHAR(255),
+    Hospital VARCHAR(255),
+    Insurance_Provider VARCHAR(255),
+    Billing_Amount DECIMAL(15, 2),
+    Room_Number INT,
+    Admission_Type VARCHAR(50),
+    Discharge_Date DATE,
+    Medication VARCHAR(255),
+    Test_Results VARCHAR(255)
+);
+
+-- 2. Create a Cleaned Version of the Table
+CREATE TABLE raw_healthcare_cleaned AS
+SELECT * FROM raw_healthcare; 
+
+-- 3. Add a Primary Key
+ALTER TABLE raw_healthcare_cleaned
+ADD COLUMN Patient_Id INT PRIMARY KEY AUTO_INCREMENT FIRST;
+
+-- 4. Trim All Text Columns
+UPDATE raw_healthcare_cleaned
+SET 
+Name = TRIM(Name),
+Gender = TRIM(Gender),
+Blood_Type = TRIM(Blood_Type),
+Medical_Condition = TRIM(Medical_Condition),
+Doctor = TRIM(Doctor),
+Hospital = TRIM(Hospital),
+Insurance_Provider = TRIM(Insurance_Provider),
+Admission_Type = TRIM(Admission_Type),
+Medication = TRIM(Medication),
+Test_Results = TRIM(Test_Results);
+
+
+-- 5. Standardize Names (Proper Case)
+UPDATE raw_healthcare_cleaned
+SET 
+Name = CONCAT(UPPER(LEFT(Name,1)),
+	   LOWER(SUBSTRING(Name,2)));
+       
+-- 6. Standardize Gender
+UPDATE raw_healthcare_cleaned
+SET Gender = 
+    CASE 
+        WHEN LOWER(Gender) = 'male' THEN 'Male'
+        WHEN LOWER(Gender) = 'female' THEN 'Female'
+        ELSE Gender
+    END;
+
+
+-- 7. Standardize Admission Type
+UPDATE raw_healthcare_cleaned
+SET Admission_Type = 
+    CASE 
+        WHEN LOWER(Admission_Type) = 'urgent' THEN 'Urgent'
+        WHEN LOWER(Admission_Type) = 'emergency' THEN 'Emergency'
+        WHEN LOWER(Admission_Type) = 'elective' THEN 'Elective'
+        ELSE Admission_Type
+    END;
+    
+    
+-- 8. Check For Duplicates    
+ SELECT Name, Age, Gender,Date_of_Admission,Hospital, COUNT(*)
+FROM raw_healthcare_cleaned
+GROUP BY Name, Age, Gender,Date_of_Admission,Hospital
+HAVING COUNT(*) > 1; 
+
+-- 9. Create Index For Better Performance
+CREATE INDEX idx_dup_check ON raw_healthcare_cleaned (Name,Age,Gender,Date_of_Admission,Hospital);
+
+-- 10. Delete Exact Duplicates
+DELETE r1
+FROM raw_healthcare_cleaned AS r1
+JOIN raw_healthcare_cleaned AS r2
+ON r1.Name = r2.Name 
+AND r1.Age = r2.Age
+AND r1.Gender =r2.Gender
+AND r1.Date_of_Admission = r2.Date_of_Admission
+AND r1.Hospital = r2.Hospital
+WHERE r1.Patient_Id > r2.Patient_Id;
+
+
+-- 11. Create Length Of Stay
+ALTER TABLE raw_healthcare_cleaned
+ADD COLUMN length_of_stay INT;
+
+UPDATE raw_healthcare_cleaned
+SET length_of_stay = DATEDIFF(Discharge_Date, Date_of_Admission);
+
+-- 12. Check For Negative or Invalid Value and Correcting them
+SELECT *
+FROM raw_healthcare_cleaned
+WHERE Age < 0
+   OR Billing_Amount < 0
+   OR length_of_stay < 0;
+
+UPDATE raw_healthcare_cleaned
+SET Billing_Amount = ABS(Billing_Amount)
+WHERE Billing_Amount < 0;
+
