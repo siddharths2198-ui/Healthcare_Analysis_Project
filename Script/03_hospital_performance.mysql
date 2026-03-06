@@ -11,6 +11,7 @@ MYSQL Functions Used:
     - Case when
     - Group By
     - Order By
+    - Rank() Over()
 ===============================================================================
 */
 
@@ -25,3 +26,15 @@ SELECT
 FROM raw_healthcare_cleaned
 GROUP BY Hospital
 ORDER BY Total_revenue DESC; 
+
+-- Top 3 Hospitals by Revenue 
+SELECT * 
+FROM ( 
+	SELECT
+		Hospital,
+		ROUND(SUM(Billing_Amount),2) AS Total_Revenue,
+		RANK() OVER(ORDER BY SUM(Billing_Amount) DESC) AS Revenue_Rank
+	FROM raw_healthcare_cleaned
+	GROUP BY Hospital
+) Ranked
+WHERE Revenue_Rank <= 3;
